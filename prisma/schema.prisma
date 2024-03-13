@@ -1,22 +1,46 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
-model Author {
-  id       Int     @id @default(autoincrement()) // @id attributes used to determine the primary key specifically used for id as integer
-  name     String  @unique
-  age      Int
-  address  String?
-  isActive Boolean @default(false)
+model User {
+  user_id        Int             @id @default(autoincrement())
+  name           String
+  age            Int
+  email          String          @unique
+  isAdmin        Boolean
+  UserPreference UserPreference?
+  writtenPost    Post[]          @relation("writtenBy")
+  likedPost      Post[]          @relation("likedBy")
+
+  @@unique([name, age])
+}
+
+model UserPreference {
+  profile_id    Int     @id @default(autoincrement())
+  recentUpdates Boolean
+  user          User    @relation(fields: [user_id], references: [user_id])
+  user_id       Int     @unique
+}
+
+model Post {
+  post_id    Int        @id @default(autoincrement())
+  title      String?
+  createdAt  DateTime
+  updatedAt  DateTime
+  author     User       @relation("writtenBy", fields: [author_id], references: [user_id])
+  author_id  Int
+  likedBy    User       @relation("likedBy", fields: [liked_id], references: [user_id])
+  liked_id   Int
+  categories Category[]
+}
+
+model Category {
+  category_id Int    @id @default(autoincrement())
+  name        String @unique
+  posts       Post[]
 }
