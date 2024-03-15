@@ -12,10 +12,10 @@ model User {
   name           String
   age            Int
   email          String          @unique
-  isAdmin        Boolean
-  UserPreference UserPreference?
+  role           Role            @default(BASIC)
   writtenPost    Post[]          @relation("writtenBy")
   likedPost      Post[]          @relation("likedBy")
+  UserPreference UserPreference?
 
   @@unique([name, age])
 }
@@ -23,8 +23,8 @@ model User {
 model UserPreference {
   profile_id    Int     @id @default(autoincrement())
   recentUpdates Boolean
-  user          User    @relation(fields: [user_id], references: [user_id])
   user_id       Int     @unique
+  user          User    @relation(fields: [user_id], references: [user_id])
 }
 
 model Post {
@@ -32,15 +32,20 @@ model Post {
   title      String?
   createdAt  DateTime
   updatedAt  DateTime
-  author     User       @relation("writtenBy", fields: [author_id], references: [user_id])
   author_id  Int
-  likedBy    User       @relation("likedBy", fields: [liked_id], references: [user_id])
   liked_id   Int
-  categories Category[]
+  author     User       @relation("writtenBy", fields: [author_id], references: [user_id])
+  likedBy    User       @relation("likedBy", fields: [liked_id], references: [user_id])
+  categories Category[] @relation("CategoryToPost")
 }
 
 model Category {
   category_id Int    @id @default(autoincrement())
   name        String @unique
-  posts       Post[]
+  posts       Post[] @relation("CategoryToPost")
+}
+
+enum Role {
+  BASIC
+  ADMIN
 }
